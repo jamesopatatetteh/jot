@@ -772,7 +772,7 @@
                             <i class="fas fa-paper-plane"></i> Send Message
                         </button>
                         <p style="color: #aaa; font-size: 0.85rem; margin-top: 15px;">
-                            <i class="fas fa-check-circle" style="color: #4CAF50;"></i> Form is connected to Google Apps Script
+                            <i class="fas fa-check-circle" style="color: #4CAF50;"></i> Connected to Google Apps Script
                         </p>
                     </form>
                 </div>
@@ -881,4 +881,214 @@
                 
                 // Bounce off edges
                 if (node.x < 0 || node.x > canvas.width) node.speedX *= -1;
-                if (node.y < 0 || node.y > canvas.height) node.s
+                if (node.y < 0 || node.y > canvas.height) node.speedY *= -1;
+                
+                // Keep nodes within bounds
+                node.x = Math.max(0, Math.min(canvas.width, node.x));
+                node.y = Math.max(0, Math.min(canvas.height, node.y));
+                
+                // Draw node with pulsing effect
+                node.pulse += 0.05;
+                const pulseSize = Math.sin(node.pulse) * 0.5 + 1;
+                
+                const gradient = ctx.createRadialGradient(
+                    node.x, node.y, 0,
+                    node.x, node.y, node.radius * pulseSize
+                );
+                
+                gradient.addColorStop(0, 'rgba(255, 152, 0, 0.8)');
+                gradient.addColorStop(1, 'rgba(255, 152, 0, 0)');
+                
+                ctx.globalAlpha = 0.7;
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, node.radius * pulseSize, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw inner dot
+                ctx.globalAlpha = 1;
+                ctx.fillStyle = '#ff9800';
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, 1, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            ctx.globalAlpha = 1;
+        }
+        
+        // Initialize circuit
+        createNodes();
+        createConnections();
+        
+        // Animation loop
+        function animateCircuit() {
+            drawCircuit();
+            requestAnimationFrame(animateCircuit);
+            
+            // Occasionally update connections
+            if (Math.random() < 0.01) {
+                createConnections();
+            }
+        }
+        
+        // Start animation
+        animateCircuit();
+        
+        // Header scroll effect
+        window.addEventListener('scroll', function() {
+            const header = document.getElementById('header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+        
+        // Mobile menu toggle
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const navLinks = document.getElementById('nav-links');
+        
+        mobileMenuToggle.addEventListener('click', function() {
+            navLinks.classList.toggle('active');
+            mobileMenuToggle.innerHTML = navLinks.classList.contains('active') 
+                ? '<i class="fas fa-times"></i>' 
+                : '<i class="fas fa-bars"></i>';
+        });
+        
+        // Close mobile menu when clicking a link
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                mobileMenuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+            });
+        });
+        
+        // Typing effect for hero section
+        const typedTextSpan = document.querySelector('.typed-text');
+        const textArray = ['Power Systems', 'Circuit Design', 'Embedded Systems', 'Renewable Energy', 'Automation'];
+        let textArrayIndex = 0;
+        let charIndex = 0;
+        
+        function typeEffect() {
+            if (charIndex < textArray[textArrayIndex].length) {
+                typedTextSpan.textContent += textArray[textArrayIndex].charAt(charIndex);
+                charIndex++;
+                setTimeout(typeEffect, 100);
+            } else {
+                setTimeout(eraseEffect, 1500);
+            }
+        }
+        
+        function eraseEffect() {
+            if (charIndex > 0) {
+                typedTextSpan.textContent = textArray[textArrayIndex].substring(0, charIndex - 1);
+                charIndex--;
+                setTimeout(eraseEffect, 50);
+            } else {
+                textArrayIndex = (textArrayIndex + 1) % textArray.length;
+                setTimeout(typeEffect, 500);
+            }
+        }
+        
+        // Start typing effect after page loads
+        window.addEventListener('load', () => {
+            setTimeout(typeEffect, 1000);
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+            
+            toast.innerHTML = `<i class="${icon}"></i> ${message}`;
+            toast.className = 'toast';
+            toast.classList.add(type);
+            
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 5000);
+        }
+
+        // GOOGLE APPS SCRIPT INTEGRATION
+        // Messages will be sent to: jamesopata220@gmail.com
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwYldXWQyJ0ePYoTMl6J26w-2K8X5XgK0nqPVpWLSZqDGrLPETT73Ml9VfUQ3T1ODZf/exec';
+
+        // Contact form submission
+        document.getElementById('contactForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = {
+                name: document.getElementById('name').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                subject: document.getElementById('subject').value.trim(),
+                message: document.getElementById('message').value.trim(),
+                timestamp: new Date().toISOString(),
+                page: 'James Tetteh Portfolio'
+            };
+            
+            // Validate form
+            if (!formData.name || !formData.email || !formData.subject || !formData.message) {
+                showToast('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(formData.email)) {
+                showToast('Please enter a valid email address', 'error');
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = document.getElementById('submitBtn');
+            const originalHTML = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+            
+            try {
+                // Send to Google Apps Script
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                // Show success message
+                showToast('Message sent successfully! I\'ll respond within 24 hours.', 'success');
+                
+                // Reset form
+                this.reset();
+                
+                // Also send a backup email notification
+                sendBackupNotification(formData);
+                
+            } catch (error) {
+                console.log('Message sent via Google Apps Script');
+            
